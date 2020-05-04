@@ -69,7 +69,7 @@ const cleanBuilds = () => {
 };
 
 readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
-  .then(data => {
+  .then((data) => {
     const $ = cheerio.load(data);
     const currentAppName = $('string[name=app_name]').text();
     const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
@@ -79,7 +79,7 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
       .version('2.4.1')
       .arguments('<newName>')
       .option('-b, --bundleID [value]', 'Set custom bundle identifier eg. "com.junedomingo.travelapp"')
-      .action(newName => {
+      .action((newName) => {
         const nS_NewName = newName.replace(/\s/g, '');
         const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
         const lC_Ns_NewAppName = nS_NewName.toLowerCase();
@@ -108,7 +108,7 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
         }
 
         // Move files and folders from ./config/foldersAndFiles.js
-        const resolveFoldersAndFiles = new Promise(resolve => {
+        const resolveFoldersAndFiles = new Promise((resolve) => {
           listOfFoldersAndFiles.forEach((element, index) => {
             const dest = element.replace(new RegExp(nS_CurrentAppName, 'i'), nS_NewName);
             let itemsProcessed = 1;
@@ -143,10 +143,10 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
 
         // Modify file content from ./config/filesToModifyContent.js
         const resolveFilesToModifyContent = () =>
-          new Promise(resolve => {
+          new Promise((resolve) => {
             let filePathsCount = 0;
             let itemsProcessed = 0;
-            listOfFilesToModifyContent.map(file => {
+            listOfFilesToModifyContent.map((file) => {
               filePathsCount += file.paths.length;
 
               file.paths.map((filePath, index) => {
@@ -167,8 +167,8 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
           });
 
         const resolveJavaFiles = () =>
-          new Promise(resolve => {
-            readFile(path.join(dirname, 'android/app/src/main/AndroidManifest.xml')).then(data => {
+          new Promise((resolve) => {
+            readFile(path.join(dirname, 'android/app/src/main/AndroidManifest.xml')).then((data) => {
               const $ = cheerio.load(data);
               const currentBundleID = $('manifest').attr('package');
               const newBundleID = program.bundleID ? bundleID : `com.${lC_Ns_NewAppName}`;
@@ -216,38 +216,33 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
             });
           });
 
-        const resolveBundleIdentifiers = params =>
-          new Promise(resolve => {
+        const resolveBundleIdentifiers = (params) =>
+          new Promise((resolve) => {
             let filePathsCount = 0;
             const { currentBundleID, newBundleID, newBundlePath, javaFileBase, currentJavaPath, newJavaPath } = params;
 
-            bundleIdentifiers(
-              currentAppName,
-              newName,
-              projectName,
-              currentBundleID,
-              newBundleID,
-              newBundlePath
-            ).map(file => {
-              filePathsCount += file.paths.length - 1;
-              let itemsProcessed = 0;
+            bundleIdentifiers(currentAppName, newName, projectName, currentBundleID, newBundleID, newBundlePath).map(
+              (file) => {
+                filePathsCount += file.paths.length - 1;
+                let itemsProcessed = 0;
 
-              file.paths.map((filePath, index) => {
-                const newPaths = [];
-                if (fs.existsSync(path.join(dirname, filePath))) {
-                  newPaths.push(path.join(dirname, filePath));
+                file.paths.map((filePath, index) => {
+                  const newPaths = [];
+                  if (fs.existsSync(path.join(dirname, filePath))) {
+                    newPaths.push(path.join(dirname, filePath));
 
-                  setTimeout(() => {
-                    itemsProcessed += index;
-                    replaceContent(file.regex, file.replacement, newPaths);
-                    if (itemsProcessed === filePathsCount) {
-                      const oldBundleNameDir = path.join(dirname, javaFileBase, currentBundleID);
-                      resolve({ oldBundleNameDir, shouldDelete: currentJavaPath !== newJavaPath });
-                    }
-                  }, 200 * index);
-                }
-              });
-            });
+                    setTimeout(() => {
+                      itemsProcessed += index;
+                      replaceContent(file.regex, file.replacement, newPaths);
+                      if (itemsProcessed === filePathsCount) {
+                        const oldBundleNameDir = path.join(dirname, javaFileBase, currentBundleID);
+                        resolve({ oldBundleNameDir, shouldDelete: currentJavaPath !== newJavaPath });
+                      }
+                    }, 200 * index);
+                  }
+                });
+              }
+            );
           });
 
         const rename = () => {
@@ -279,7 +274,7 @@ readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
       .parse(process.argv);
     if (!process.argv.slice(2).length) program.outputHelp();
   })
-  .catch(err => {
+  .catch((err) => {
     if (err.code === 'ENOENT') return console.log('Directory should be created using "react-native init"');
 
     return console.log('Something went wrong: ', err);
