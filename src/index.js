@@ -3,20 +3,20 @@
 // nS - No Space
 // lC - Lowercase
 
-import cheerio from 'cheerio';
-import colors from 'colors';
-import fs from 'fs';
-import program from 'commander';
-import replace from 'node-replace';
-import shell from 'shelljs';
-import pjson from '../package.json';
-import path from 'path';
-import { foldersAndFiles } from './config/foldersAndFiles';
-import { filesToModifyContent } from './config/filesToModifyContent';
-import { bundleIdentifiers } from './config/bundleIdentifiers';
+const cheerio = require('cheerio');
+const colors = require('colors');
+const fs = require('fs');
+const { program } = require('commander');
+const replace = require('node-replace');
+const shell = require('shelljs');
+const pjson = require('../package.json');
+const path = require('path');
+const { foldersAndFiles } = require('./config/foldersAndFiles');
+const { filesToModifyContent } = require('./config/filesToModifyContent');
+const { bundleIdentifiers } = require('./config/bundleIdentifiers');
 
 const devTestRNProject = ''; // For Development eg '/Users/junedomingo/Desktop/RN49'
-const __dirname = devTestRNProject || process.cwd();
+const dirname = devTestRNProject || process.cwd();
 const projectName = pjson.name;
 const replaceOptions = {
   recursive: true,
@@ -41,7 +41,7 @@ function replaceContent(regex, replacement, paths) {
   });
 
   for (const filePath of paths) {
-    console.log(`${filePath.replace(__dirname, '')} ${colors.green('MODIFIED')}`);
+    console.log(`${filePath.replace(dirname, '')} ${colors.green('MODIFIED')}`);
   }
 }
 
@@ -59,16 +59,16 @@ const deletePreviousBundleDirectory = ({ oldBundleNameDir, shouldDelete }) => {
 
 const cleanBuilds = () => {
   const deleteDirectories = shell.rm('-rf', [
-    path.join(__dirname, 'ios/build/*'),
-    path.join(__dirname, 'android/.gradle/*'),
-    path.join(__dirname, 'android/app/build/*'),
-    path.join(__dirname, 'android/build/*'),
+    path.join(dirname, 'ios/build/*'),
+    path.join(dirname, 'android/.gradle/*'),
+    path.join(dirname, 'android/app/build/*'),
+    path.join(dirname, 'android/build/*'),
   ]);
   Promise.resolve(deleteDirectories);
   console.log('Done removing builds.'.green);
 };
 
-readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
+readFile(path.join(dirname, 'android/app/src/main/res/values/strings.xml'))
   .then(data => {
     const $ = cheerio.load(data);
     const currentAppName = $('string[name=app_name]').text();
@@ -117,16 +117,16 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
             setTimeout(() => {
               itemsProcessed += index;
 
-              if (fs.existsSync(path.join(__dirname, element)) || !fs.existsSync(path.join(__dirname, element))) {
+              if (fs.existsSync(path.join(dirname, element)) || !fs.existsSync(path.join(dirname, element))) {
                 const move = shell.exec(
-                  `git mv "${path.join(__dirname, element)}" "${path.join(__dirname, dest)}" 2>/dev/null`
+                  `git mv "${path.join(dirname, element)}" "${path.join(dirname, dest)}" 2>/dev/null`
                 );
 
                 if (move.code === 0) {
                   console.log(successMsg);
                 } else if (move.code === 128) {
                   // if "outside repository" error occured
-                  if (shell.mv('-f', path.join(__dirname, element), path.join(__dirname, dest)).code === 0) {
+                  if (shell.mv('-f', path.join(dirname, element), path.join(dirname, dest)).code === 0) {
                     console.log(successMsg);
                   } else {
                     console.log("Ignore above error if this file doesn't exist");
@@ -154,8 +154,8 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
 
                 setTimeout(() => {
                   itemsProcessed++;
-                  if (fs.existsSync(path.join(__dirname, filePath))) {
-                    newPaths.push(path.join(__dirname, filePath));
+                  if (fs.existsSync(path.join(dirname, filePath))) {
+                    newPaths.push(path.join(dirname, filePath));
                     replaceContent(file.regex, file.replacement, newPaths);
                   }
                   if (itemsProcessed === filePathsCount) {
@@ -168,7 +168,7 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
 
         const resolveJavaFiles = () =>
           new Promise(resolve => {
-            readFile(path.join(__dirname, 'android/app/src/main/AndroidManifest.xml')).then(data => {
+            readFile(path.join(dirname, 'android/app/src/main/AndroidManifest.xml')).then(data => {
               const $ = cheerio.load(data);
               const currentBundleID = $('manifest').attr('package');
               const newBundleID = program.bundleID ? bundleID : `com.${lC_Ns_NewAppName}`;
@@ -183,8 +183,8 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
                 newBundlePath = `${javaFileBase}/${newBundlePath}`;
               }
 
-              const fullCurrentBundlePath = path.join(__dirname, currentJavaPath);
-              const fullNewBundlePath = path.join(__dirname, newBundlePath);
+              const fullCurrentBundlePath = path.join(dirname, currentJavaPath);
+              const fullNewBundlePath = path.join(dirname, newBundlePath);
 
               // Create new bundle folder if doesn't exist yet
               if (!fs.existsSync(fullNewBundlePath)) {
@@ -234,14 +234,14 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
 
               file.paths.map((filePath, index) => {
                 const newPaths = [];
-                if (fs.existsSync(path.join(__dirname, filePath))) {
-                  newPaths.push(path.join(__dirname, filePath));
+                if (fs.existsSync(path.join(dirname, filePath))) {
+                  newPaths.push(path.join(dirname, filePath));
 
                   setTimeout(() => {
                     itemsProcessed += index;
                     replaceContent(file.regex, file.replacement, newPaths);
                     if (itemsProcessed === filePathsCount) {
-                      const oldBundleNameDir = path.join(__dirname, javaFileBase, currentBundleID);
+                      const oldBundleNameDir = path.join(dirname, javaFileBase, currentBundleID);
                       resolve({ oldBundleNameDir, shouldDelete: currentJavaPath !== newJavaPath });
                     }
                   }, 200 * index);
@@ -259,7 +259,7 @@ readFile(path.join(__dirname, 'android/app/src/main/res/values/strings.xml'))
             .then(cleanBuilds)
             .then(() => console.log(`APP SUCCESSFULLY RENAMED TO "${newName}"! 🎉 🎉 🎉`.green))
             .then(() => {
-              if (fs.existsSync(path.join(__dirname, 'ios', 'Podfile'))) {
+              if (fs.existsSync(path.join(dirname, 'ios', 'Podfile'))) {
                 console.log(
                   `${colors.yellow('Podfile has been modified, please run "pod install" inside ios directory.')}`
                 );

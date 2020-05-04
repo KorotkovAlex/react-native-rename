@@ -1,7 +1,7 @@
 // nS - No Space
 // lC - Lowercase
 
-export function filesToModifyContent(currentAppName, newName) {
+function filesToModifyContent(currentAppName, newName) {
   const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
   const nS_NewName = newName.replace(/\s/g, '');
 
@@ -52,3 +52,7 @@ export function filesToModifyContent(currentAppName, newName) {
     },
   ];
 }
+
+exports.module = {
+  filesToModifyContent,
+};
