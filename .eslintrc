@@ -18,6 +18,9 @@
     "no-console": 0,
     "no-debugger": 1,
     "newline-before-return": "error",
-    "no-useless-escape": 0
+    "no-useless-escape": 0,
+    "no-useless-catch": 0,
+    "no-misleading-character-class": 0,
+    "no-async-promise-executor": 0
   }
 }
