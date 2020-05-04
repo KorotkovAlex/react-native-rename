@@ -35,6 +35,6 @@ function bundleIdentifiers(currentAppName, newName, projectName, currentBundleID
   ];
 }
 
-exports.module = {
+module.exports = {
   bundleIdentifiers,
 };

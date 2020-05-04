@@ -53,6 +53,6 @@ function filesToModifyContent(currentAppName, newName) {
   ];
 }
 
-exports.module = {
+module.exports = {
   filesToModifyContent,
 };

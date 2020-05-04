@@ -19,6 +19,6 @@ function foldersAndFiles(currentAppName, newName) {
   ];
 }
 
-exports.module = {
+module.exports = {
   foldersAndFiles,
 };
